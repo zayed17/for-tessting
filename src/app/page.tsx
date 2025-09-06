@@ -6,23 +6,11 @@ import { WishesSection } from "@/components/wishes-section"
 
 export default function HomePage() {
   useEffect(() => {
-    const extraData = {
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      deviceMemory: (navigator as any).deviceMemory,
-      logicalCores: navigator.hardwareConcurrency,
-      screen: {
-        width: window.screen.width,
-        height: window.screen.height,
-        colorDepth: window.screen.colorDepth,
-      },
-      connection: (navigator as any).connection || null,
-    }
-
-    fetch("/api/track-location", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(extraData),
-    }).catch(console.error)
+    // Call GET endpoint to track visitor
+    fetch("/api/track-location")
+      .then(res => res.json())
+      .then(data => console.log("Visitor tracked:", data))
+      .catch(console.error)
   }, [])
 
   return (
