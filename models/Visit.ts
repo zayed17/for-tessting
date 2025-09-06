@@ -7,6 +7,23 @@ export interface IVisit extends Document {
   country?: string
   latitude?: number
   longitude?: number
+  browser?: string
+  browserVersion?: string
+  os?: string
+  osVersion?: string
+  device?: string
+  deviceType?: string
+  engine?: string
+  language?: string
+  timezone?: string
+  deviceMemory?: number
+  logicalCores?: number
+  screen?: {
+    width: number
+    height: number
+    colorDepth: number
+  }
+  connection?: object
   timestamp: Date
 }
 
@@ -17,6 +34,23 @@ const VisitSchema: Schema<IVisit> = new Schema({
   country: String,
   latitude: Number,
   longitude: Number,
+  browser: String,
+  browserVersion: String,
+  os: String,
+  osVersion: String,
+  device: String,
+  deviceType: String,
+  engine: String,
+  language: String,
+  timezone: String,
+  deviceMemory: Number,
+  logicalCores: Number,
+  screen: {
+    width: Number,
+    height: Number,
+    colorDepth: Number,
+  },
+  connection: Object,
   timestamp: { type: Date, default: Date.now },
 })
 
