@@ -6,10 +6,6 @@ import { WishesSection } from "@/components/wishes-section"
 
 export default function HomePage() {
   useEffect(() => {
-    // Track server-side info
-    fetch("/api/track-location").catch(console.error)
-
-    // Send extra client-side details
     const extraData = {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       deviceMemory: (navigator as any).deviceMemory,

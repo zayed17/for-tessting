@@ -2,10 +2,9 @@ import { NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 
 import * as UAParser from "ua-parser-js"
-
 import Visit from "../../../../models/Visit"
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   await connectDB()
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
@@ -14,69 +13,49 @@ export async function GET(req: Request) {
 
   const parser = new UAParser.UAParser(userAgent)
   const uaResult = parser.getResult()
+
+  const body = await req.json() // client-side extra info
+
   try {
-    // Check if IP exists
-    let visit = await Visit.findOne({ ip })
+    // Fetch location info from IP
+    const geoRes = await fetch(`https://ipapi.co/${ip}/json/`)
+    const geoData = await geoRes.json()
 
-    if (!visit) {
-      // Fetch location info
-      const geoRes = await fetch(`https://ipapi.co/${ip}/json/`)
-      const geoData = await geoRes.json()
-
-      visit = new Visit({
-        ip,
-        city: geoData.city,
-        region: geoData.region,
-        country: geoData.country_name,
-        latitude: geoData.latitude,
-        longitude: geoData.longitude,
-        browser: uaResult.browser.name,
-        browserVersion: uaResult.browser.version,
-        os: uaResult.os.name,
-        osVersion: uaResult.os.version,
-        device: uaResult.device.model || "Desktop",
-        deviceType: uaResult.device.type || "Computer",
-        engine: uaResult.engine.name,
-        language: acceptLang,
-        timestamp: new Date(),
-      })
-      await visit.save()
-    } else {
-      // Update timestamp if IP revisits
-      visit.timestamp = new Date()
-      await visit.save()
+    const visitData = {
+      ip,
+      city: geoData.city,
+      region: geoData.region,
+      country: geoData.country_name,
+      latitude: geoData.latitude,
+      longitude: geoData.longitude,
+      browser: uaResult.browser.name,
+      browserVersion: uaResult.browser.version,
+      os: uaResult.os.name,
+      osVersion: uaResult.os.version,
+      device: uaResult.device.model || "Desktop",
+      deviceType: uaResult.device.type || "Computer",
+      engine: uaResult.engine.name,
+      language: acceptLang,
+      timezone: body.timezone,
+      deviceMemory: body.deviceMemory,
+      logicalCores: body.logicalCores,
+      screen: body.screen,
+      connection: body.connection,
+      timestamp: new Date(),
     }
 
-    return NextResponse.json({ success: true, visit })
-  } catch (error) {
-    console.error("Failed to track location:", error)
-    return NextResponse.json(
-      { error: "Failed to save location" },
-      { status: 500 }
-    )
-  }
-}
-
-// Optional: receive client-side extra details
-export async function POST(req: Request) {
-  await connectDB()
-  const body = await req.json()
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
-
-  try {
+    // Save to MongoDB or update if IP exists
     const visit = await Visit.findOneAndUpdate(
       { ip },
-      {
-        ...body,
-        timestamp: new Date(),
-      },
+      visitData,
       { new: true, upsert: true }
     )
+
     return NextResponse.json({ success: true, visit })
   } catch (error) {
     console.error(error)
     return NextResponse.json(
-      { error: "Failed to save client details" },
+      { error: "Failed to save visitor details" },
       { status: 500 }
     )
   }
