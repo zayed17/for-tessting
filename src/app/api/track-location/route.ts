@@ -12,6 +12,16 @@ export async function GET(req: Request) {
     "unknown"
 
   try {
+    // Check if IP already exists
+    const existingVisit = await Visit.findOne({ ip })
+    if (existingVisit) {
+      return NextResponse.json({
+        success: true,
+        message: "IP already tracked, skipping save",
+        visit: existingVisit,
+      })
+    }
+
     // Fetch location info
     const geoRes = await fetch(`https://ipapi.co/${ip}/json/`)
     const data = await geoRes.json()
@@ -26,7 +36,7 @@ export async function GET(req: Request) {
       timestamp: new Date(),
     }
 
-    // Save to MongoDB
+    // Save to MongoDB only if not exists
     const visit = new Visit(locationData)
     await visit.save()
 
