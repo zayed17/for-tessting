@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import { BirthdayHero } from "@/components/birthday-hero"
 import { DuasCarousel } from "@/components/quotes-section"
 import { WishesSection } from "@/components/wishes-section"
+import KnowledgeFeed from "@/components/KnowledgeFeed"
 
 export default function HomePage() {
   useEffect(() => {
@@ -16,8 +17,9 @@ export default function HomePage() {
   return (
     <main className="min-h-screen">
       <BirthdayHero />
-      <WishesSection />
+      {/* <WishesSection /> */}
       <DuasCarousel />
+      <KnowledgeFeed />
     </main>
   )
 }
