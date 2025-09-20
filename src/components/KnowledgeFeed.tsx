@@ -28,6 +28,7 @@ export default function RandomHadith() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  
   const fetchHadith = async () => {
     setLoading(true);
     try {
